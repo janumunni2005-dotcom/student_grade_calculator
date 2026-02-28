@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Result Pro</title>
+
+<style>
+:root{
+  --bg1:#1e3a8a;
+  --bg2:#0f172a;
+  --card1:#111827;
+  --card2:#1f2937;
+  --accent:#38bdf8;
+  --success:#22c55e;
+  --danger:#ef4444;
+  --text:#f1f5f9;
+  --sub:#94a3b8;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+body{
+  font-family:Segoe UI, Arial, sans-serif;
+  background:linear-gradient(135deg,var(--bg1),var(--bg2));
+  color:var(--text);
+  min-height:100vh;
+}
+
+/* HEADER */
+header{
+  text-align:center;
+  padding:20px;
+  background:rgba(0,0,0,0.3);
+  backdrop-filter:blur(8px);
+  box-shadow:0 4px 15px rgba(0,0,0,0.4);
+}
+
+header h1{
+  font-size:26px;
+  letter-spacing:1px;
+}
+
+header div{
+  color:var(--sub);
+  margin-top:5px;
+}
+
+/* MAIN WRAPPER */
+.wrap{
+  max-width:1100px;
+  margin:30px auto;
+  padding:20px;
+}
+
+/* GRID LAYOUT */
+.grid{
+  display:grid;
+  gap:25px;
+}
+
+@media(min-width:900px){
+  .grid{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+/* CARD DESIGN */
+.card{
+  background:linear-gradient(145deg,var(--card1),var(--card2));
+  border-radius:18px;
+  padding:25px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.5);
+  transition:transform .3s ease;
+}
+
+.card:hover{
+  transform:translateY(-5px);
+}
+
+.card h2{
+  margin-bottom:15px;
+  color:var(--accent);
+}
+
+/* INPUT FIELDS */
+input{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:10px;
+  border:none;
+  outline:none;
+  background:#334155;
+  color:white;
+  font-size:14px;
+  transition:.3s;
+}
+
+input:focus{
+  background:#475569;
+  box-shadow:0 0 8px var(--accent);
+}
+
+/* BUTTONS */
+button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:10px;
+  border:none;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.3s;
+  background:var(--accent);
+  color:black;
+}
+
+button:hover{
+  opacity:.85;
+}
+
+.danger{
+  background:var(--danger);
+  color:white;
+  margin-top:8px;
+}
+
+/* RESULT LIST */
+.list{
+  margin-top:15px;
+}
+
+.item{
+  background:#0f172a;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:12px;
+  border-left:4px solid var(--accent);
+  transition:.3s;
+}
+
+.item:hover{
+  background:#1e293b;
+}
+
+.meta{
+  font-size:13px;
+  color:var(--sub);
+  margin-top:5px;
+}
+
+#empty{
+  margin-top:15px;
+  text-align:center;
+  color:var(--sub);
+}
+
+footer{
+  text-align:center;
+  padding:20px;
+  color:var(--sub);
+  margin-top:20px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Student Result Pro</h1>
+  <div>Calculate and Manage Student Results</div>
+</header>
+
+<main class="wrap">
+  <div class="grid">
+
+    <!-- ADD RESULT -->
+    <section class="card">
+      <h2>Add Student Result</h2>
+
+      <input id="name" placeholder="Student Name">
+      <input id="roll" placeholder="Roll Number">
+
+      <input id="sub1" type="number" placeholder="Subject 1 Marks">
+      <input id="sub2" type="number" placeholder="Subject 2 Marks">
+      <input id="sub3" type="number" placeholder="Subject 3 Marks">
+      <input id="sub4" type="number" placeholder="Subject 4 Marks">
+      <input id="sub5" type="number" placeholder="Subject 5 Marks">
+
+      <button onclick="addResult()">Calculate & Save</button>
+      <div id="msg" class="meta"></div>
+    </section>
+
+    <!-- RESULT LIST -->
+    <section class="card">
+      <h2>All Results</h2>
+      <input id="search" placeholder="Search by name..." oninput="render()">
+      <div class="list" id="list"></div>
+      <div id="empty" class="meta">No results added.</div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  © <span id="year"></span> Student Result System
+</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const store = {
+  key:'student-results',
+  load(){ return JSON.parse(localStorage.getItem(this.key))||[]; },
+  save(v){ localStorage.setItem(this.key, JSON.stringify(v)); }
+};
+
+let results = store.load();
+
+function calculateGrade(avg){
+  if(avg>=90) return "A+";
+  if(avg>=75) return "A";
+  if(avg>=60) return "B";
+  if(avg>=40) return "C";
+  return "Fail";
+}
+
+function addResult(){
+  const name=$('name').value.trim();
+  const roll=$('roll').value.trim();
+  const s1=+sub1.value, s2=+sub2.value, s3=+sub3.value, s4=+sub4.value, s5=+sub5.value;
+
+  if(!name||!roll){ $('msg').textContent="Name and Roll required!"; return; }
+
+  const total=s1+s2+s3+s4+s5;
+  const avg=total/5;
+  const grade=calculateGrade(avg);
+
+  results.unshift({
+    id:crypto.randomUUID(),
+    name, roll,
+    total, avg:avg.toFixed(2), grade,
+    date:new Date().toLocaleString()
+  });
+
+  store.save(results);
+  $('msg').textContent="Result Added Successfully!";
+  document.querySelectorAll("input").forEach(i=>i.value="");
+  render();
+}
+
+function del(id){
+  results=results.filter(r=>r.id!==id);
+  store.save(results);
+  render();
+}
+
+function render(){
+  const q=$('search').value.toLowerCase();
+  const list=$('list');
+  list.innerHTML="";
+  const filtered=results.filter(r=>r.name.toLowerCase().includes(q));
+  $('empty').style.display=filtered.length?"none":"block";
+
+  filtered.forEach(r=>{
+    const div=document.createElement("div");
+    div.className="item";
+    div.innerHTML=`
+      <strong>${r.name}</strong> (Roll: ${r.roll})
+      <div class="meta">Total: ${r.total} | Avg: ${r.avg} | Grade: ${r.grade}</div>
+      <div class="meta">${r.date}</div>
+      <button class="danger" onclick="del('${r.id}')">Delete</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+$('year').textContent=new Date().getFullYear();
+render();
+</script>
+
+</body>
+</html>
